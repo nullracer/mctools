@@ -1,5 +1,107 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#174b3c"><title>Marin Catholic | Class &amp; Assignment Calendar</title><link rel="stylesheet" href="styles.css"></head>
-<body><main class="shell"><header><div><p class="eyebrow">MARIN CATHOLIC · STUDENT SCHEDULE</p><h1>School day, sorted.</h1><p class="subhead">Class blocks in the grid. Upcoming assignments by due date.</p></div></header>
-<section class="calendar"><div class="calendar-head"><button id="prev" aria-label="Previous month">‹</button><h2 id="month-title"></h2><button id="next" aria-label="Next month">›</button><button id="today" class="today">Today</button></div><p class="calendar-note">Classes appear on their scheduled days with their time spans.</p><div class="weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div id="grid" class="grid"></div></section>
-<section class="upcoming"><div class="event-columns"><section class="event-column"><div class="section-head"><h2>Assignments · By due date</h2><span id="assignment-count"></span></div><div id="assignments" class="event-list"></div></section><section class="event-column"><div class="section-head"><h2 id="classes-heading">Classes · Today</h2><span id="class-count"></span></div><div id="classes" class="event-list"></div></section></div></section><footer><span id="updated"></span><span>Times shown in your local timezone</span></footer></main><script src="app.js" defer></script></body></html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5f7">
+  <meta name="description" content="MCTools brings your class schedule and assignments into one calm, clear view.">
+  <title>MCTools — Your school day, in sync.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{color-scheme:light;scroll-behavior:smooth}body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}.glass{background:rgba(255,255,255,.76);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}.hero-glow{background:radial-gradient(ellipse at 52% 60%,rgba(47,202,255,.23),transparent 52%)}.screen-shadow{box-shadow:0 50px 100px rgba(17,25,36,.28),0 16px 34px rgba(17,25,36,.16)}.float-shadow{box-shadow:0 24px 60px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.08)}.grain{background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.14'/%3E%3C/svg%3E")}.reveal{animation:reveal .75s cubic-bezier(.2,.7,.2,1) both}.reveal-delay{animation-delay:.16s}@keyframes reveal{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body class="bg-[#f5f5f7] text-[#1d1d1f] selection:bg-cyan-200 selection:text-black">
+  <header class="fixed inset-x-0 top-0 z-50 border-b border-black/[.06] glass">
+    <nav aria-label="Main navigation" class="mx-auto flex h-12 max-w-6xl items-center justify-between px-5 text-[12px] text-black/75 md:px-8">
+      <a href="#top" aria-label="MCTools home" class="flex items-center gap-2 font-semibold tracking-tight text-black"><span class="grid h-6 w-6 place-items-center rounded-[7px] bg-black text-[10px] font-bold text-white">MC</span><span>MCTools</span></a>
+      <div class="hidden items-center gap-9 md:flex">
+        <a class="transition hover:text-black" href="#features">Store</a><a class="transition hover:text-black" href="#features">Mac</a><a class="transition hover:text-black" href="#features">iPad</a><a class="transition hover:text-black" href="#features">iPhone</a><a class="transition hover:text-black" href="#support">Support</a>
+      </div>
+      <div class="flex items-center gap-5">
+        <button aria-label="Search" class="text-black/70 transition hover:text-black"><svg viewBox="0 0 24 24" class="h-[17px] w-[17px]" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 4.3 4.3"/></svg></button>
+        <button aria-label="Your bag" class="text-black/70 transition hover:text-black"><svg viewBox="0 0 24 24" class="h-[17px] w-[17px]" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5.5 8h13l1 12h-15l1-12Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg></button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="relative overflow-hidden px-5 pb-0 pt-32 text-center md:px-8 md:pt-40">
+      <div class="hero-glow pointer-events-none absolute inset-0"></div>
+      <div class="relative z-10 mx-auto max-w-4xl reveal">
+        <p class="mb-5 text-[11px] font-semibold uppercase tracking-[.22em] text-black/45">Made for Marin Catholic</p>
+        <h1 class="text-balance text-5xl font-semibold leading-[.98] tracking-[-.065em] text-[#1d1d1f] sm:text-7xl md:text-[96px]">Your school day,<br><span class="bg-gradient-to-r from-[#1877f2] via-[#31b9ed] to-[#58d9d1] bg-clip-text text-transparent">in sync.</span></h1>
+        <p class="mx-auto mt-7 max-w-xl text-pretty text-base leading-7 text-black/55 md:text-[19px] md:leading-8">Every class. Every deadline. One clear view of what’s next.</p>
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-5">
+          <a href="#features" class="rounded-full bg-[#0071e3] px-6 py-3 text-[14px] font-medium text-white shadow-sm transition duration-300 hover:scale-[1.03] hover:bg-[#0077ed]">Explore MCTools</a>
+          <a href="#deep-dive" class="group inline-flex items-center gap-2 text-[14px] font-medium text-[#06c] transition hover:text-[#004f9a]">See how it works <span class="text-lg transition-transform group-hover:translate-x-1">→</span></a>
+        </div>
+      </div>
+
+      <div aria-label="Preview of the MCTools weekly calendar" class="relative mx-auto mt-16 max-w-5xl px-1 md:mt-20">
+        <div class="absolute inset-x-[12%] bottom-0 top-[12%] rounded-[50%] bg-cyan-300/20 blur-[90px]"></div>
+        <div class="screen-shadow relative overflow-hidden rounded-t-[24px] border border-white/60 bg-[#f8f9fc] text-left md:rounded-t-[30px]">
+          <div class="flex h-10 items-center gap-2 border-b border-black/[.06] bg-white/85 px-4 md:h-12 md:px-6"><span class="h-2 w-2 rounded-full bg-[#ff6259]"></span><span class="h-2 w-2 rounded-full bg-[#f4bf4f]"></span><span class="h-2 w-2 rounded-full bg-[#35c768]"></span><span class="ml-3 text-[10px] font-medium text-black/35">MCTools · Week at a glance</span></div>
+          <div class="grid min-h-[280px] grid-cols-[.72fr_1.28fr] md:min-h-[440px] md:grid-cols-[.65fr_1.35fr]">
+            <aside class="border-r border-black/[.06] bg-white/70 p-4 md:p-8">
+              <div class="text-[9px] font-semibold uppercase tracking-[.18em] text-black/35 md:text-[10px]">Tuesday</div><div class="mt-1 font-semibold tracking-tight text-black md:text-3xl">September 29</div>
+              <div class="mt-7 space-y-2 md:mt-10 md:space-y-3">
+                <div class="rounded-lg border-l-[3px] border-[#3c77f4] bg-[#eef3ff] p-2.5 md:p-4"><div class="text-[8px] text-black/45 md:text-[10px]">8:10 — 9:00</div><div class="mt-1 text-[10px] font-semibold md:text-sm">English</div><div class="hidden text-[10px] text-black/45 md:block">Block A</div></div>
+                <div class="rounded-lg border-l-[3px] border-[#50bfa4] bg-[#eef8f4] p-2.5 md:p-4"><div class="text-[8px] text-black/45 md:text-[10px]">9:10 — 10:00</div><div class="mt-1 text-[10px] font-semibold md:text-sm">Biology</div><div class="hidden text-[10px] text-black/45 md:block">Block B</div></div>
+                <div class="hidden rounded-lg border-l-[3px] border-[#e2a83b] bg-[#fff7e9] p-4 md:block"><div class="text-[10px] text-black/45">10:10 — 11:00</div><div class="mt-1 text-sm font-semibold">U.S. History</div><div class="text-[10px] text-black/45">Block C</div></div>
+              </div>
+            </aside>
+            <div class="p-4 md:p-8">
+              <div class="flex items-end justify-between border-b border-black/[.08] pb-3 md:pb-5"><div><div class="text-[9px] font-medium uppercase tracking-[.16em] text-black/35 md:text-[10px]">Due this week</div><div class="mt-1 text-lg font-semibold tracking-tight md:text-3xl">Assignments</div></div><span class="text-[9px] text-black/35 md:text-xs">4 deadlines</span></div>
+              <div class="divide-y divide-black/[.07]">
+                <div class="flex items-center gap-2 py-3 md:gap-5 md:py-5"><div class="w-8 shrink-0 text-center md:w-12"><div class="text-[7px] font-semibold uppercase text-[#0071e3] md:text-[9px]">Wed</div><div class="text-base font-semibold md:text-2xl">30</div></div><div class="min-w-0 flex-1"><div class="truncate text-[10px] font-semibold md:text-sm">Cell structure lab</div><div class="truncate text-[8px] text-black/40 md:text-xs">Biology · Block B</div></div><span class="hidden rounded-full bg-[#e8f6ee] px-3 py-1 text-[9px] font-medium text-[#20814e] md:block">On track</span></div>
+                <div class="flex items-center gap-2 py-3 md:gap-5 md:py-5"><div class="w-8 shrink-0 text-center md:w-12"><div class="text-[7px] font-semibold uppercase text-[#0071e3] md:text-[9px]">Thu</div><div class="text-base font-semibold md:text-2xl">01</div></div><div class="min-w-0 flex-1"><div class="truncate text-[10px] font-semibold md:text-sm">Reading response</div><div class="truncate text-[8px] text-black/40 md:text-xs">English · Block A</div></div><span class="hidden rounded-full bg-[#e8f6ee] px-3 py-1 text-[9px] font-medium text-[#20814e] md:block">On track</span></div>
+                <div class="flex items-center gap-2 py-3 md:gap-5 md:py-5"><div class="w-8 shrink-0 text-center md:w-12"><div class="text-[7px] font-semibold uppercase text-[#0071e3] md:text-[9px]">Fri</div><div class="text-base font-semibold md:text-2xl">02</div></div><div class="min-w-0 flex-1"><div class="truncate text-[10px] font-semibold md:text-sm">Chapter 4 problem set</div><div class="truncate text-[8px] text-black/40 md:text-xs">Algebra II · Block D</div></div><span class="hidden rounded-full bg-[#fff4df] px-3 py-1 text-[9px] font-medium text-[#a56a04] md:block">Coming up</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="mx-auto max-w-6xl px-5 py-24 md:px-8 md:py-32">
+      <div class="mb-10 flex flex-col justify-between gap-5 md:mb-14 md:flex-row md:items-end">
+        <div><p class="mb-3 text-[11px] font-semibold uppercase tracking-[.2em] text-[#0071e3]">MCTools, at a glance</p><h2 class="max-w-xl text-4xl font-semibold leading-[1.02] tracking-[-.055em] md:text-6xl">Less checking.<br>More knowing.</h2></div>
+        <p class="max-w-sm text-sm leading-6 text-black/50">Built around the way your school week actually works. Your schedule and deadlines, together from the first bell to the last.</p>
+      </div>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-5">
+        <article class="group relative min-h-[300px] overflow-hidden rounded-[24px] bg-[#1d1d1f] p-7 text-white md:col-span-7 md:min-h-[390px] md:p-10">
+          <div class="relative z-10 max-w-xs"><div class="mb-7 grid h-10 w-10 place-items-center rounded-full bg-white/10"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7.5 3v4M16.5 3v4M4 9.5h16M8 13h2m4 0h2M8 17h2"/></svg></div><h3 class="text-2xl font-semibold tracking-tight md:text-3xl">Know where<br>you need to be.</h3><p class="mt-3 text-sm leading-6 text-white/55">Class blocks laid out by day and time. No digging through separate calendars.</p></div>
+          <div class="absolute -bottom-16 right-[-3%] w-[60%] rotate-[-7deg] rounded-t-2xl border border-white/10 bg-[#292a2e] p-4 shadow-2xl transition duration-500 group-hover:rotate-[-4deg] md:p-6"><div class="mb-4 flex justify-between text-[9px] text-white/40"><span>THURSDAY</span><span>OCT 02</span></div><div class="space-y-2"><div class="rounded-lg bg-[#333b4e] p-3 text-[10px] text-white/90">8:10 <span class="ml-3 font-semibold">World Literature</span></div><div class="rounded-lg bg-[#28443e] p-3 text-[10px] text-white/90">9:15 <span class="ml-3 font-semibold">Chemistry</span></div><div class="rounded-lg bg-[#514433] p-3 text-[10px] text-white/90">10:20 <span class="ml-3 font-semibold">U.S. History</span></div></div></div>
+        </article>
+        <article class="group relative min-h-[300px] overflow-hidden rounded-[24px] bg-[#e5f5fb] p-7 md:col-span-5 md:min-h-[390px] md:p-9">
+          <div class="relative z-10"><div class="mb-7 grid h-10 w-10 place-items-center rounded-full bg-white/80 text-[#0071e3]"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3.5v3m10-3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13H4V6a1 1 0 0 1 1-1Z"/><path d="m8 14 2.3 2.3L16 11"/></svg></div><h3 class="max-w-xs text-2xl font-semibold tracking-tight md:text-3xl">Deadlines,<br>with breathing room.</h3><p class="mt-3 max-w-xs text-sm leading-6 text-black/55">Assignments sorted by when they’re due, so the next step is always clear.</p></div>
+          <div class="absolute -bottom-4 right-6 w-48 rounded-2xl border border-white/80 bg-white/90 p-4 shadow-xl transition duration-500 group-hover:-translate-y-2"><div class="text-[9px] font-semibold uppercase tracking-widest text-[#0071e3]">Due Friday</div><div class="mt-2 text-sm font-semibold">Problem set 04</div><div class="mt-1 text-[10px] text-black/40">Algebra II · Block D</div></div>
+        </article>
+        <article class="relative min-h-[270px] overflow-hidden rounded-[24px] bg-[#d9f4ed] p-7 md:col-span-5 md:p-9">
+          <div class="relative z-10 max-w-xs"><div class="mb-7 grid h-10 w-10 place-items-center rounded-full bg-white/75 text-[#087a62]"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12m0-12.72-2.12 2.12m-8.48 8.48-2.12 2.12"/><circle cx="12" cy="12" r="4"/></svg></div><h3 class="text-2xl font-semibold tracking-tight md:text-3xl">One calm<br>starting point.</h3><p class="mt-3 text-sm leading-6 text-black/55">A simple view for the busy parts of being a student at Marin Catholic.</p></div>
+          <div class="absolute -bottom-12 -right-4 h-44 w-44 rounded-full border-[22px] border-white/50"></div><div class="absolute -bottom-6 right-10 h-24 w-24 rounded-full bg-[#50c9ad]/30"></div>
+        </article>
+        <article class="relative flex min-h-[270px] flex-col justify-between overflow-hidden rounded-[24px] bg-[#f0eff4] p-7 md:col-span-7 md:flex-row md:items-end md:p-9">
+          <div class="relative z-10 max-w-xs"><div class="mb-7 grid h-10 w-10 place-items-center rounded-full bg-white text-[#0071e3]"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 17.5h6"/></svg></div><h3 class="text-2xl font-semibold tracking-tight md:text-3xl">Fits the way<br>you already work.</h3><p class="mt-3 text-sm leading-6 text-black/55">Bring your school calendar into a clean, student-first view on the devices you use.</p></div>
+          <div class="relative mx-auto mt-9 h-40 w-[85px] shrink-0 rounded-[22px] border-[4px] border-[#252529] bg-white p-2 shadow-xl md:mx-6 md:mt-0"><div class="h-full rounded-[14px] bg-[#f5f5f7] p-2"><div class="mt-3 text-[6px] text-black/40">MON, SEP 29</div><div class="mt-1 text-[11px] font-bold">Today</div><div class="mt-3 space-y-1"><div class="h-7 rounded bg-[#e8efff]"></div><div class="h-7 rounded bg-[#e7f5ef]"></div><div class="h-7 rounded bg-[#fff3df]"></div></div></div></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="deep-dive" class="relative overflow-hidden bg-[#050608] px-5 py-24 text-white md:px-8 md:py-32">
+      <div class="absolute inset-0 hero-glow opacity-70"></div><div class="grain pointer-events-none absolute inset-0 opacity-[.13]"></div>
+      <div class="relative mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-[.72fr_1.28fr] md:gap-16">
+        <div class="relative z-10"><p class="mb-4 text-[11px] font-semibold uppercase tracking-[.2em] text-cyan-300">Your week, in focus</p><h2 class="text-4xl font-semibold leading-[1.02] tracking-[-.06em] md:text-6xl">The whole picture.<br><span class="text-white/45">Nothing extra.</span></h2><p class="mt-6 max-w-sm text-sm leading-7 text-white/50 md:text-base">See today’s classes beside the deadlines ahead. MCTools gives your school week room to make sense.</p><a href="#top" class="mt-8 inline-flex items-center gap-2 text-sm font-medium text-cyan-300 transition hover:text-white">Back to the top <span class="transition-transform hover:-translate-y-0.5">↑</span></a></div>
+        <div class="relative min-h-[350px] md:min-h-[490px]">
+          <div class="absolute left-[4%] top-[9%] h-[82%] w-[80%] rotate-[-5deg] rounded-[26px] border border-white/10 bg-[#17191e] p-4 float-shadow md:p-6"><div class="flex items-center justify-between border-b border-white/10 pb-4"><div><div class="text-[9px] uppercase tracking-[.16em] text-white/35">MCTools / This week</div><div class="mt-1 text-lg font-semibold tracking-tight md:text-2xl">Tuesday, September 29</div></div><div class="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-sm">⌄</div></div><div class="mt-4 grid grid-cols-5 gap-2 text-center text-[8px] uppercase tracking-widest text-white/35"><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="mt-2 grid grid-cols-5 gap-2"><div class="rounded-lg bg-[#283c5d] p-2 text-[8px] text-white/80"><b class="block text-cyan-200">8:10</b>English</div><div class="rounded-lg bg-white/[.06] p-2 text-[8px] text-white/55"><b class="block text-cyan-200">9:15</b>Biology</div><div class="rounded-lg bg-white/[.06] p-2 text-[8px] text-white/55"><b class="block text-cyan-200">10:20</b>History</div><div class="rounded-lg bg-white/[.06] p-2 text-[8px] text-white/55"><b class="block text-cyan-200">11:25</b>Math</div><div class="rounded-lg bg-white/[.06] p-2 text-[8px] text-white/55"><b class="block text-cyan-200">1:10</b>Art</div></div><div class="mt-5 grid grid-cols-2 gap-3"><div class="rounded-xl bg-white/[.05] p-3"><div class="text-[8px] uppercase tracking-widest text-white/35">Classes today</div><div class="mt-2 text-2xl font-semibold">7<span class="ml-1 text-xs font-normal text-white/40">blocks</span></div></div><div class="rounded-xl bg-white/[.05] p-3"><div class="text-[8px] uppercase tracking-widest text-white/35">Next deadline</div><div class="mt-2 text-sm font-semibold">Lab report</div><div class="mt-1 text-[9px] text-cyan-200">Tomorrow · Biology</div></div></div><div class="mt-4 h-20 rounded-xl border border-white/[.07] bg-gradient-to-br from-[#153c4b] to-[#11151a]"></div></div>
+          <div class="absolute bottom-[3%] right-[1%] w-[42%] rounded-2xl border border-white/10 bg-[#22252b]/90 p-4 backdrop-blur-xl float-shadow md:bottom-[4%] md:p-5"><div class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#5fe1bc]"></span><span class="text-[9px] uppercase tracking-widest text-white/45">Up next</span></div><div class="mt-2 text-sm font-semibold">Chemistry · Block B</div><div class="mt-1 text-[10px] text-white/40">Room 214 · 9:15 AM</div></div>
+        </div>
+      </div>
+      <div class="relative mx-auto mt-10 max-w-6xl border-t border-white/10 pt-5 text-[10px] text-white/35">MCTools · Made for Marin Catholic students</div>
+    </section>
+  </main>
+
+  <footer id="support" class="bg-[#f5f5f7] px-5 py-8 text-center text-[11px] text-black/40"><p>MCTools · A calendar concept for the Marin Catholic community.</p><p class="mt-2">Classes in view. Deadlines in reach.</p></footer>
+</body>
+</html>
