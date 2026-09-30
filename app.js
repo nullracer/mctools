@@ -1,11 +1,70 @@
-const grid=document.querySelector('#grid'),title=document.querySelector('#month-title'),eventList=document.querySelector('#events'),count=document.querySelector('#event-count');
-const today=new Date();today.setHours(0,0,0,0);let cursor=new Date(today.getFullYear(),today.getMonth(),1),events=[];
-const fmt=(d,o)=>new Intl.DateTimeFormat(undefined,o).format(d),dval=v=>{if(!v)return null;const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v);return m?new Date(+m[1],+m[2]-1,+m[3]):new Date(v)},same=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
-function details(e){const title=e.title||'Untitled event',block=title.match(/\s-\s([A-G])\s\(([A-G])\)$/i);if(block)return{type:'class',name:title.replace(/\s-\s[A-G]\s\([A-G]\)$/i,''),block:block[1].toUpperCase()};const split=title.indexOf(' - ');if(split>0&&split<title.length-3)return{type:'assignment',course:title.slice(0,split).trim(),name:title.slice(split+3).trim()};return{type:'other',name:title}}
-function render(){title.textContent=fmt(cursor,{month:'long',year:'numeric'});grid.replaceChildren();const offset=new Date(cursor.getFullYear(),cursor.getMonth(),1).getDay(),days=new Date(cursor.getFullYear(),cursor.getMonth()+1,0).getDate(),total=Math.ceil((offset+days)/7)*7;
- for(let i=0;i<total;i++){const d=new Date(cursor.getFullYear(),cursor.getMonth(),i-offset+1),cell=document.createElement('div');cell.className='day'+(d.getMonth()!==cursor.getMonth()?' outside':'')+(same(d,today)?' today':'');const n=document.createElement('div');n.className='day-num';n.textContent=d.getDate();cell.append(n);
- const on=events.filter(e=>{const s=dval(e.start),end=dval(e.end)||s;return s&&d>=new Date(s.getFullYear(),s.getMonth(),s.getDate())&&d<=new Date(end.getFullYear(),end.getMonth(),end.getDate())});on.slice(0,3).forEach(e=>{const b=document.createElement('button'),info=details(e);b.className=`chip ${info.type}`;b.textContent=info.type==='class'?`${info.name} · Block ${info.block}`:info.type==='assignment'?`${info.course}: ${info.name}`:info.name;b.title=[e.title,e.location].filter(Boolean).join(' · ');b.onclick=()=>document.getElementById('event-'+encodeURIComponent(e.id))?.scrollIntoView({behavior:'smooth',block:'center'});cell.append(b)});if(on.length>3){const m=document.createElement('div');m.className='more';m.textContent=`+${on.length-3} more`;cell.append(m)}grid.append(cell)}renderUpcoming()}
-function renderUpcoming(){const list=events.filter(e=>dval(e.start)&&dval(e.end||e.start)>=today).sort((a,b)=>dval(a.start)-dval(b.start));count.textContent=`${list.length} events`;eventList.replaceChildren();if(!list.length){const p=document.createElement('p');p.className='empty';p.textContent='No upcoming events found.';eventList.append(p);return}
- const groups=[['class','Classes'],['assignment','Assignments'],['other','Other events']];for(const [type,label] of groups){const items=list.filter(e=>details(e).type===type);if(!items.length)continue;const section=document.createElement('section');section.className=`event-group ${type}-group`;const heading=document.createElement('h3');heading.className='group-title';heading.textContent=`${label} (${items.length})`;const cards=document.createElement('div');cards.className='event-list';for(const e of items){const d=dval(e.start),infoData=details(e),box=document.createElement('article');box.className=`event ${type}-event`;box.id='event-'+encodeURIComponent(e.id);const date=document.createElement('div');date.className='date-box';date.innerHTML=`<b>${fmt(d,{day:'numeric'})}</b><small>${fmt(d,{month:'short'})}</small>`;const info=document.createElement('div'),h=document.createElement('h3'),p=document.createElement('p');h.textContent=type==='assignment'?infoData.name:infoData.name;p.textContent=[type==='class'?`Block ${infoData.block}`:type==='assignment'?infoData.course:null,e.all_day?'All day':fmt(d,{hour:'numeric',minute:'2-digit'}),e.location].filter(Boolean).join(' · ');info.append(h,p);box.append(date,info);cards.append(box)}section.append(heading,cards);eventList.append(section)}}
-document.querySelector('#prev').onclick=()=>{cursor=new Date(cursor.getFullYear(),cursor.getMonth()-1,1);render()};document.querySelector('#next').onclick=()=>{cursor=new Date(cursor.getFullYear(),cursor.getMonth()+1,1);render()};document.querySelector('#today').onclick=()=>{cursor=new Date(today.getFullYear(),today.getMonth(),1);render()};
-fetch('./events.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json()}).then(data=>{events=data.events||[];document.querySelector('#updated').textContent=data.updated?`Updated ${fmt(new Date(data.updated),{dateStyle:'medium',timeStyle:'short'})}`:'Calendar feed';render()}).catch(()=>{render();const p=document.createElement('p');p.className='empty';p.textContent='Calendar data is not published yet. Configure the CALENDAR_FEED secret and run the GitHub Actions workflow.';eventList.replaceChildren(p)});
+const grid=document.querySelector('#grid');
+const title=document.querySelector('#month-title');
+const classList=document.querySelector('#classes');
+const assignmentList=document.querySelector('#assignments');
+const today=new Date();today.setHours(0,0,0,0);
+let cursor=new Date(today.getFullYear(),today.getMonth(),1),events=[];
+const fmt=(d,o)=>new Intl.DateTimeFormat(undefined,o).format(d);
+const dval=v=>{if(!v)return null;const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v);return m?new Date(+m[1],+m[2]-1,+m[3]):new Date(v)};
+const same=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+function details(e){
+ const full=e.title||'Untitled event',block=full.match(/\s-\s([A-G])\s\(\1\)$/i);
+ if(block)return{type:'class',name:full.replace(/\s-\s[A-G]\s\([A-G]\)$/i,''),block:block[1].toUpperCase()};
+ const split=full.indexOf(' - ');
+ return split>0&&split<full.length-3?{type:'assignment',course:full.slice(0,split).trim(),name:full.slice(split+3).trim()}:{type:'assignment',course:'',name:full};
+}
+function startOfWeek(date){const result=new Date(date.getFullYear(),date.getMonth(),date.getDate());result.setDate(result.getDate()-result.getDay());return result}
+function timeRange(e){
+ const start=dval(e.start),end=dval(e.end);
+ if(!start||e.all_day)return e.all_day?'All day':'';
+ const options={hour:'numeric',minute:'2-digit'};
+ return end&&end>start?`${fmt(start,options)}–${fmt(end,options)}`:fmt(start,options);
+}
+function render(){
+ title.textContent=fmt(cursor,{month:'long',year:'numeric'});grid.replaceChildren();
+ const offset=new Date(cursor.getFullYear(),cursor.getMonth(),1).getDay(),days=new Date(cursor.getFullYear(),cursor.getMonth()+1,0).getDate(),total=Math.ceil((offset+days)/7)*7;
+ for(let i=0;i<total;i++){
+  const day=new Date(cursor.getFullYear(),cursor.getMonth(),i-offset+1),cell=document.createElement('div');
+  cell.className='day'+(day.getMonth()!==cursor.getMonth()?' outside':'')+(same(day,today)?' today':'');
+  const number=document.createElement('div');number.className='day-num';number.textContent=day.getDate();cell.append(number);
+  const on=events.filter(e=>{
+   const info=details(e),start=dval(e.start),end=dval(e.end)||start;if(!start)return false;
+   if(info.type==='assignment'){const week=startOfWeek(start),weekEnd=new Date(week);weekEnd.setDate(week.getDate()+6);return day>=week&&day<=weekEnd}
+   return day>=new Date(start.getFullYear(),start.getMonth(),start.getDate())&&day<=new Date(end.getFullYear(),end.getMonth(),end.getDate());
+  }).sort((a,b)=>(details(a).type==='class'?-1:1)-(details(b).type==='class'?-1:1)||dval(a.start)-dval(b.start));
+  on.slice(0,3).forEach(e=>{
+   const info=details(e),button=document.createElement('button');button.className=`chip ${info.type}`;
+   const start=dval(e.start);
+   button.textContent=info.type==='class'?`${info.name} · ${timeRange(e)}`:`Due ${fmt(start,{weekday:'short'})}: ${info.course?info.course+': ':''}${info.name}`;
+   button.title=info.type==='assignment'?`Due ${fmt(start,{weekday:'long',month:'short',day:'numeric'})} · ${e.title}`:[e.title,e.location].filter(Boolean).join(' · ');
+   button.onclick=()=>document.getElementById('event-'+encodeURIComponent(e.id))?.scrollIntoView({behavior:'smooth',block:'center'});cell.append(button);
+  });
+  if(on.length>3){const more=document.createElement('div');more.className='more';more.textContent=`+${on.length-3} more`;cell.append(more)}grid.append(cell);
+ }
+ renderUpcoming();
+}
+function renderUpcoming(){
+ const upcoming=events.filter(e=>dval(e.start)&&dval(e.end||e.start)>=today).sort((a,b)=>dval(a.start)-dval(b.start));
+ const classes=upcoming.filter(e=>details(e).type==='class'),assignments=upcoming.filter(e=>details(e).type==='assignment');
+ document.querySelector('#class-count').textContent=classes.length?`${classes.length} upcoming`:'';
+ document.querySelector('#assignment-count').textContent=assignments.length?`${assignments.length} upcoming`:'';
+ fillList(classList,classes,'class');fillList(assignmentList,assignments,'assignment');
+}
+function fillList(container,list,type){
+ container.replaceChildren();
+ if(!list.length){const empty=document.createElement('p');empty.className='empty';empty.textContent=type==='class'?'No upcoming classes.':'No upcoming assignments.';container.append(empty);return}
+ for(const event of list){
+  const start=dval(event.start),infoData=details(event),card=document.createElement('article');card.className=`event ${type}-event`;card.id='event-'+encodeURIComponent(event.id);
+  const date=document.createElement('div');date.className='date-box';date.innerHTML=`<b>${fmt(start,{day:'numeric'})}</b><small>${fmt(start,{month:'short'})}</small>`;
+  const info=document.createElement('div'),heading=document.createElement('h3'),meta=document.createElement('p');
+  heading.textContent=type==='class'?infoData.name:infoData.name;
+  meta.textContent=type==='class'?[`Block ${infoData.block}`,timeRange(event),event.location].filter(Boolean).join(' · '):[`Due ${fmt(start,{weekday:'long',month:'short',day:'numeric'})}`,infoData.course].filter(Boolean).join(' · ');
+  info.append(heading,meta);card.append(date,info);container.append(card);
+ }
+}
+document.querySelector('#prev').onclick=()=>{cursor=new Date(cursor.getFullYear(),cursor.getMonth()-1,1);render()};
+document.querySelector('#next').onclick=()=>{cursor=new Date(cursor.getFullYear(),cursor.getMonth()+1,1);render()};
+document.querySelector('#today').onclick=()=>{cursor=new Date(today.getFullYear(),today.getMonth(),1);render()};
+fetch('./events.json',{cache:'no-store'}).then(response=>{if(!response.ok)throw Error();return response.json()}).then(data=>{
+ events=data.events||[];document.querySelector('#updated').textContent=data.updated?`Updated ${fmt(new Date(data.updated),{dateStyle:'medium',timeStyle:'short'})}`:'Calendar feed';render();
+}).catch(()=>{render();const empty=document.createElement('p');empty.className='empty';empty.textContent='Calendar data is not published yet. Configure the CALENDAR_FEED secret and run the GitHub Actions workflow.';classList.replaceChildren(empty)});
