@@ -13,7 +13,6 @@ function details(e){
  const split=full.indexOf(' - ');
  return split>0&&split<full.length-3?{type:'assignment',course:full.slice(0,split).trim(),name:full.slice(split+3).trim()}:{type:'assignment',course:'',name:full};
 }
-function startOfWeek(date){const result=new Date(date.getFullYear(),date.getMonth(),date.getDate());result.setDate(result.getDate()-result.getDay());return result}
 function timeRange(e){
  const start=dval(e.start),end=dval(e.end);
  if(!start||e.all_day)return e.all_day?'All day':'';
@@ -29,14 +28,14 @@ function render(){
   const number=document.createElement('div');number.className='day-num';number.textContent=day.getDate();cell.append(number);
   const on=events.filter(e=>{
    const info=details(e),start=dval(e.start),end=dval(e.end)||start;if(!start)return false;
-   if(info.type==='assignment'){const week=startOfWeek(start),weekEnd=new Date(week);weekEnd.setDate(week.getDate()+6);return day>=week&&day<=weekEnd}
+   if(info.type!=='class')return false;
    return day>=new Date(start.getFullYear(),start.getMonth(),start.getDate())&&day<=new Date(end.getFullYear(),end.getMonth(),end.getDate());
   }).sort((a,b)=>(details(a).type==='class'?-1:1)-(details(b).type==='class'?-1:1)||dval(a.start)-dval(b.start));
   on.slice(0,3).forEach(e=>{
-   const info=details(e),button=document.createElement('button');button.className=`chip ${info.type}`;
+   const info=details(e),button=document.createElement('button');button.className='chip class';
    const start=dval(e.start);
-   button.textContent=info.type==='class'?`${info.name} · ${timeRange(e)}`:`Due ${fmt(start,{weekday:'short'})}: ${info.course?info.course+': ':''}${info.name}`;
-   button.title=info.type==='assignment'?`Due ${fmt(start,{weekday:'long',month:'short',day:'numeric'})} · ${e.title}`:[e.title,e.location].filter(Boolean).join(' · ');
+   button.textContent=`${info.name} · ${timeRange(e)}`;
+   button.title=[e.title,e.location].filter(Boolean).join(' · ');
    button.onclick=()=>document.getElementById('event-'+encodeURIComponent(e.id))?.scrollIntoView({behavior:'smooth',block:'center'});cell.append(button);
   });
   if(on.length>3){const more=document.createElement('div');more.className='more';more.textContent=`+${on.length-3} more`;cell.append(more)}grid.append(cell);
@@ -44,10 +43,11 @@ function render(){
  renderUpcoming();
 }
 function renderUpcoming(){
- const upcoming=events.filter(e=>dval(e.start)&&dval(e.end||e.start)>=today).sort((a,b)=>dval(a.start)-dval(b.start));
- const classes=upcoming.filter(e=>details(e).type==='class'),assignments=upcoming.filter(e=>details(e).type==='assignment');
- document.querySelector('#class-count').textContent=classes.length?`${classes.length} upcoming`:'';
+ const assignments=events.filter(e=>details(e).type==='assignment'&&dval(e.start)>=today).sort((a,b)=>dval(a.start)-dval(b.start));
+ const classes=events.filter(e=>{if(details(e).type!=='class'||!dval(e.start))return false;const start=dval(e.start),end=dval(e.end)||start;return today>=new Date(start.getFullYear(),start.getMonth(),start.getDate())&&today<=new Date(end.getFullYear(),end.getMonth(),end.getDate())}).sort((a,b)=>dval(a.start)-dval(b.start));
+ document.querySelector('#class-count').textContent=classes.length?`${classes.length} today`:'';
  document.querySelector('#assignment-count').textContent=assignments.length?`${assignments.length} upcoming`:'';
+ document.querySelector('#classes-heading').textContent=`Classes · ${fmt(today,{weekday:'long'})}`;
  fillList(classList,classes,'class');fillList(assignmentList,assignments,'assignment');
 }
 function fillList(container,list,type){
