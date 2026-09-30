@@ -7,6 +7,7 @@ let cursor=new Date(today.getFullYear(),today.getMonth(),1),events=[];
 const fmt=(d,o)=>new Intl.DateTimeFormat(undefined,o).format(d);
 const dval=v=>{if(!v)return null;const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v);return m?new Date(+m[1],+m[2]-1,+m[3]):new Date(v)};
 const same=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+document.querySelector('#today-label').textContent=fmt(today,{weekday:'long',month:'long',day:'numeric'});
 function details(e){
  const full=e.title||'Untitled event',block=full.match(/\s-\s([A-G])\s\(\1\)$/i);
  if(block)return{type:'class',name:full.replace(/\s-\s[A-G]\s\([A-G]\)$/i,''),block:block[1].toUpperCase()};
@@ -67,4 +68,4 @@ document.querySelector('#next').onclick=()=>{cursor=new Date(cursor.getFullYear(
 document.querySelector('#today').onclick=()=>{cursor=new Date(today.getFullYear(),today.getMonth(),1);render()};
 fetch('./events.json',{cache:'no-store'}).then(response=>{if(!response.ok)throw Error();return response.json()}).then(data=>{
  events=data.events||[];document.querySelector('#updated').textContent=data.updated?`Updated ${fmt(new Date(data.updated),{dateStyle:'medium',timeStyle:'short'})}`:'Calendar feed';render();
-}).catch(()=>{render();const empty=document.createElement('p');empty.className='empty';empty.textContent='Calendar data is not published yet. Configure the CALENDAR_FEED secret and run the GitHub Actions workflow.';classList.replaceChildren(empty)});
+}).catch(()=>{render();for(const list of [classList,assignmentList]){const empty=document.createElement('p');empty.className='empty';empty.textContent='Calendar data is not published yet. Check the CALENDAR_FEED secret and run the publish workflow.';list.replaceChildren(empty)}});
